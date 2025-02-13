@@ -3,6 +3,7 @@ import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import { User } from "../models/User.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.util.js";
+import jwt from "jsonwebtoken"
 
 const generateTokens = async (userid)=>{
     try {
@@ -126,6 +127,58 @@ const loginUser =asyncHandler (async (req,res) =>{
 
 })
 
+const logoutUser = asyncHandler(async(req,res)=>{
+    //due to the middleware invoked now we will have req.user which has id
+    const userid = req.user._id;
+    const userFind = await User.findByIdAndUpdate(
+        userid,
+        {
+            $unset: { refreshToken: "" }
+        },
+        {new : true}//returns updated values
+    )
+    //console.log(userFind.refreshToken);
+
+    //clearing cookies
+    return res.status(200)
+    .clearCookie("accessToken", optionsforCookies)
+    .clearCookie("refreshToken", optionsforCookies)
+    .json(
+        new ApiResponse(200,{},"User LoggedOut")
+    )
+
+})
+
+//now we are creating an endpoint for frontend to hit thru which it can revalidate the access token by validating it with refresh token that is stored in the database and one which is has in form of cookie.
+const revalidateTokens = asyncHandler(async(req,res)=>{
+    
+    const incomingToken = req.cookies.refreshToken || req.body.refreshToken ;
+    if(!incomingToken ){
+        throw new ApiError(401, "Unauthorized request , No tokens found");
+    }
+
+    //now we have incoming tokens and we need to decode the token
+    const decodedToken = jwt.verify(incomingToken , process.env.REFRESH_TOKEN_SECRET);
+    
+    //now this decoded token has user._id
+    const user = await User.findById(decodedToken?._id).select("-password -refreshToken");
+    if(!user){
+        throw new ApiError(401, "User not found || invalid tokens");
+    }
+
+    //now we just need to recreate tokens and update in database and cookies
+    const {accessToken, refreshToken} = await generateTokens(user?._id);
+
+    return res.status(200)
+    .cookie("accessToken", accessToken , optionsforCookies)
+    .cookie("refreshToken", refreshToken, optionsforCookies)
+    .json(
+        new ApiResponse(200,{user})
+    )
+})
+
 export {registerUser,
-    loginUser
+    loginUser,
+    logoutUser,
+    revalidateTokens
 };
