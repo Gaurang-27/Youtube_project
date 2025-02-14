@@ -49,24 +49,24 @@ const registerUser = asyncHandler( async (req,res,next) =>{
     }
     
     //checking if avatar is recieved in input
-    const avatarPath = req.files?.avatar?.[0]?.path;
-    console.log(avatarPath);
-    if(!avatarPath){
-        throw new ApiError(400, "avatar is required");
-    }
+    // const avatarPath = req.files?.avatar?.[0]?.path;
+    // console.log(avatarPath);
+    // if(!avatarPath){
+    //     throw new ApiError(400, "avatar is required");
+    // }
 
-    //uploading avatar on cloudinary and checking if it is uploaded correctly
-    const uploadAvatar = await uploadOnCloudinary(avatarPath);
-    if(!uploadAvatar){
-        throw new ApiError(400, "problem in uploading avatar");
-    }
+    // //uploading avatar on cloudinary and checking if it is uploaded correctly
+    // const uploadAvatar = await uploadOnCloudinary(avatarPath);
+    // if(!uploadAvatar){
+    //     throw new ApiError(400, "problem in uploading avatar");
+    // }
     
     //finally creating a user and pushing it into the database
     const user = await User.create({
         email,
         fullName,
         password,
-        avatar : uploadAvatar.url,
+        //avatar : uploadAvatar.url,
         username
     })
 
@@ -177,8 +177,20 @@ const revalidateTokens = asyncHandler(async(req,res)=>{
     )
 })
 
+//update controllers will be added here
+
+const getUserDetails = asyncHandler(async (req,res) =>{
+    return res.status(200)
+    .json(
+        new ApiResponse(200, req.user,"User details found")
+    )
+})
+
+
+
 export {registerUser,
     loginUser,
     logoutUser,
-    revalidateTokens
+    revalidateTokens,
+    getUserDetails
 };

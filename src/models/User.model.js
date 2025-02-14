@@ -23,7 +23,7 @@ const userModel=new Schema({
     },
     avatar: {
         type : String,
-        require : true,
+        //require : true,
     },
     password:{
         type : String, 

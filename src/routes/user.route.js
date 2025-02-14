@@ -1,5 +1,10 @@
 import { Router } from "express";
-import { registerUser ,loginUser , logoutUser,revalidateTokens } from "../controllers/user.controller.js";
+import { registerUser 
+    ,loginUser 
+    ,logoutUser
+    ,revalidateTokens
+    ,getUserDetails} 
+    from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import {authMiddleware} from "../middlewares/auth.middleware.js"
 
@@ -22,5 +27,5 @@ userRouter.route('/logout').post(
     logoutUser
 );
 userRouter.route('/revalidate-token').post(revalidateTokens);
-
+userRouter.route('/user-date').get(authMiddleware, getUserDetails);
 export default userRouter;
