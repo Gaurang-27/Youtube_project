@@ -3,19 +3,26 @@ import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import { User } from "../models/User.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.util.js";
+import {connection} from '../index.js'
 import jwt from "jsonwebtoken"
+import { createAccessToken, createRefreshToken } from "../middlewares/tokens.middleware.js";
+import { compare } from "bcrypt";
 
 const generateTokens = async (userid)=>{
     try {
         //finding the user using the userid and then generating tokens
-        const user = await User.findById(userid);
-        const accessToken = user.createAccessToken();
-        const refreshToken = user.createRefreshToken();
+        // const [user] = await connection.query(`
+        //     select * from users 
+        //     where user_id  = ?`,[userid])
+        const accessToken = await createAccessToken(userid);
+        const refreshToken = await createRefreshToken(userid);
         //console.log(accessToken, refreshToken);
         
         //updating the refreshtoken into the database
-        user.refreshToken = refreshToken
-        await user.save({validateBeforeSave : false})
+        await connection.query(`
+            update users
+            set refreshToken = ? 
+            where user_id = ?`, [refreshToken, userid])
 
         return {accessToken, refreshToken};
     } catch (error) {
@@ -39,46 +46,53 @@ const registerUser = asyncHandler( async (req,res,next) =>{
     ){
         throw new ApiError(400,"All fields required");
     }
-    
-    //finding if user already exists
-    const findUser = await User.findOne({
-        $or : [{username}, {email}]
-    })
-    if(findUser){
-        throw new ApiError(409 , "User already registered")
+    const [findUser] = await connection.query(`
+        select * from users
+        where username=? or email=?` ,[username,email])
+    if(findUser[0]) {
+        throw new ApiError(409, "User already registered")
     }
     
     //checking if avatar is recieved in input
-    // const avatarPath = req.files?.avatar?.[0]?.path;
+    const avatarPath = req.files?.avatar?.[0]?.path;
     // console.log(avatarPath);
     // if(!avatarPath){
     //     throw new ApiError(400, "avatar is required");
     // }
 
-    // //uploading avatar on cloudinary and checking if it is uploaded correctly
-    // const uploadAvatar = await uploadOnCloudinary(avatarPath);
-    // if(!uploadAvatar){
-    //     throw new ApiError(400, "problem in uploading avatar");
-    // }
-    
-    //finally creating a user and pushing it into the database
-    const user = await User.create({
-        email,
-        fullName,
-        password,
-        //avatar : uploadAvatar.url,
-        username
-    })
+    //uploading avatar on cloudinary and checking if it is uploaded correctly
+    let uploadAvatar=null
+    if(avatarPath){
+        uploadAvatar = await uploadOnCloudinary(avatarPath);
+        if(!uploadAvatar){
+        throw new ApiError(400, "problem in uploading avatar");
+        }
+    }
+    console.log(uploadAvatar);
 
-    const createdUser = await User.findById(user._id).select(
-        "-password -refreshToken"
-    );
-    if(!createdUser){
-        throw new ApiError(500, "could not register user due to some problem");
+    const values = [email, fullName, username, password]; // Base values
+
+    let sqlQuery = `
+        INSERT INTO users (email, fullName, username, password_hash ${uploadAvatar ? ', avatar' : ''})
+        VALUES (?, ?, ?, ? ${uploadAvatar ? ', ?' : ''})
+    `;
+
+    if (uploadAvatar) {
+        values.push(uploadAvatar.url); // Add avatar only if available
+    }
+
+    const [user] = await connection.query(sqlQuery, values);
+    const userid = user?.insertId;
+    
+    const [createdUser]= await connection.query(`
+        select * from users
+        where user_id=?`,[userid]);
+    if(!createdUser[0]){
+        throw new ApiError(500, " could not create user");
     }
 
     return res.status(200).json(
-        new ApiResponse(201, createdUser, "User registered succesfully")
+        new ApiResponse(201, createdUser[0], "User registered succesfully")
     );
 
 })
@@ -93,22 +107,26 @@ const loginUser =asyncHandler (async (req,res) =>{
     }
 
     //findiing the user using the email
-    const userFind= await User.findOne({email});
-    if(!userFind){
+    const [userFind] = await connection.query(`
+        select * from users
+        where email = ?`,[email])
+    if(!userFind[0]){
         throw new ApiError(404,"user not found")
     }
 
     //validating password upon finding the user
-    const validatePassword = await userFind.isPasswordCorrect(password)
+    const validatePassword = await (userFind[0].password_hash === password)
     if(!validatePassword){
         throw new ApiError(401, "invalid credentials")
     }
 
     //time to generate tokens after validating password
-    const {accessToken, refreshToken} =await  generateTokens(userFind._id);
+    const {accessToken, refreshToken} =await  generateTokens(userFind[0].user_id);
 
     //not getting the update user object as old (userFind) still doesnot have refreshtoken
-    const loggedinUser = await User.findById(userFind._id).select("-password -refreshToken");
+    const [loggedinUser] = await connection.query("select * from users where user_id=?",[userFind[0].user_id])
+    delete loggedinUser[0].password_hash;
+    delete loggedinUser[0].refreshToken
 
     //now just send user data back to response
     return res.status(200)
@@ -118,7 +136,7 @@ const loginUser =asyncHandler (async (req,res) =>{
         new ApiResponse(
             200,
             {
-                user : loggedinUser , accessToken , refreshToken
+                user : loggedinUser[0] , accessToken , refreshToken
             },
             "Login successful"
         )
@@ -129,14 +147,11 @@ const loginUser =asyncHandler (async (req,res) =>{
 
 const logoutUser = asyncHandler(async(req,res)=>{
     //due to the middleware invoked now we will have req.user which has id
-    const userid = req.user._id;
-    const userFind = await User.findByIdAndUpdate(
-        userid,
-        {
-            $unset: { refreshToken: "" }
-        },
-        {new : true}//returns updated values
-    )
+    const userid = req.user.user_id;
+    await connection.query(`
+        update users
+        set refreshToken = NULL
+        where user_id = ?`, [userid])
     //console.log(userFind.refreshToken);
 
     //clearing cookies
@@ -161,19 +176,20 @@ const revalidateTokens = asyncHandler(async(req,res)=>{
     const decodedToken = jwt.verify(incomingToken , process.env.REFRESH_TOKEN_SECRET);
     
     //now this decoded token has user._id
-    const user = await User.findById(decodedToken?._id).select("-password -refreshToken");
-    if(!user){
+    const [user] = await connection.query(`select * from users where user_id = ?`,[decodedToken?.userid])
+    if(!user[0]){
         throw new ApiError(401, "User not found || invalid tokens");
     }
 
     //now we just need to recreate tokens and update in database and cookies
-    const {accessToken, refreshToken} = await generateTokens(user?._id);
+    const {accessToken, refreshToken} = await generateTokens(user[0]?.user_id);
+    const [updatedUser] = await connection.query(`select * from users where user_id = ?`,[user[0]?.user_id])
 
     return res.status(200)
     .cookie("accessToken", accessToken , optionsforCookies)
     .cookie("refreshToken", refreshToken, optionsforCookies)
     .json(
-        new ApiResponse(200,{user})
+        new ApiResponse(200,updatedUser[0])
     )
 })
 

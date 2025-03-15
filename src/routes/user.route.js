@@ -27,5 +27,5 @@ userRouter.route('/logout').post(
     logoutUser
 );
 userRouter.route('/revalidate-token').post(revalidateTokens);
-userRouter.route('/user-date').get(authMiddleware, getUserDetails);
+userRouter.route('/user-detail').get(authMiddleware, getUserDetails);
 export default userRouter;
