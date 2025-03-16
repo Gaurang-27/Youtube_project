@@ -1,12 +1,13 @@
 
 import './App.css'
-import RegisterUser from './RegisterUser'
+import RegisterUser from './RegisterUser/RegisterUser'
+import Getvideo from './Getvideos/Getvideo'
 
 function App() {
 
   return (
     <>
-        <RegisterUser/>
+        <Getvideo/>
     </>
   )
 }

@@ -4,12 +4,7 @@ import { useState, useEffect} from "react";
 function RegisterUser(){
 
     const [resp , setresp] =useState({});
-    const userdetails = {
-        username : "ligma",
-        password : "ligma",
-        email : "ligma@ballz",
-        fullName : "limgaballz"
-    }
+    
 
     // useEffect(()=>{
     //     axios.post('/users/register',userdetails)
