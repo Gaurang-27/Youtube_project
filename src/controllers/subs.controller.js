@@ -7,7 +7,18 @@ const toggleSub = asyncHandler(async (req,res)=>{
     const subscriber = req.user.user_id;
     const {sub_to} = req.params;
     console.log(sub_to);
-
+    
+    //if already sub then we need to unsubscribe
+    const [checkifsubscribed] = await connection.query(`
+        select * from subscriptions
+        where subscribed_to_id = ? and subscriber_id=?`,[sub_to, subscriber]);
+    if(checkifsubscribed[0]){
+        await connection.query(`
+            delete from subscriptions
+            where subscribed_to_id = ? and subscriber_id=?`,[sub_to, subscriber]);
+        
+        return res.status(200).json(new ApiResponse("Unsubscribed"))
+    }
     const [result] = await connection.query(`
         insert into subscriptions (subscriber_id, subscribed_to_id)
         values(?,?)`, [subscriber, sub_to]);
