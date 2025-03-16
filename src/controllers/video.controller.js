@@ -53,6 +53,68 @@ const publishVideo = asyncHandler(async (req,res)=>{
 
 })  
 
+const getAllVideos = asyncHandler(async (req,res)=>{
+    const {limit = 10 , page = 1} = req.query;
+
+    const offset= (page-1)*limit;
+    const [result] = await connection.query(`
+        select * from videos
+        order by uploaded_at
+        limit ? offset ?`, [limit ,offset]);
+    if(!result) {
+        throw new ApiError(400, "could not retrieve content");
+    }
+
+    return res.status(200).json(
+        new ApiResponse (result)
+    )
+})
+
+const getVideoByUser= asyncHandler(async (req,res)=>{
+    const {limit =10 , page =1} = req.query;
+    const offset = (page-1)* limit;
+    const user_id = req.params;
+    //console.log(user_id.user_id);
+
+    if(!user_id) {
+        throw new ApiError(400, "user_id required");
+    }
+
+    const [user] = await connection.query(`select fullName from users where user_id = ?`, [user_id.user_id]);
+    if(!user[0]){
+        throw new ApiError(404, "User does not exist");
+    }
+    const [videos] = await connection.query(`
+        select * from videos
+        where user_id = ?
+        order by uploaded_at
+        limit ? offset ?`, [user_id.user_id,limit,offset]);
+    return res.status(200).json(
+        new ApiResponse(videos)
+    ) 
+})
+
+const getVideoById= asyncHandler( async (req,res)=>{
+    const video_id=req.params;
+    if(!video_id){
+        throw new ApiError(400, "video id is required to find video");
+    }
+
+    const [video]= await connection.query("select * from videos where video_id =?", [video_id.video_id]);
+    if(!video[0]){
+        throw new ApiError(404, "video not found");
+
+    }
+    return res.status(200).json(
+        new ApiResponse(video[0])
+    )
+})
+
+//video delete controller
+
 export {
-    publishVideo
+    publishVideo,
+    getAllVideos,
+    getVideoById,
+    getVideoByUser
 }
