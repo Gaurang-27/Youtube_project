@@ -1,12 +1,10 @@
 import { asyncHandler } from "../utils/asynHandler.js";
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
-import { User } from "../models/User.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.util.js";
 import {connection} from '../index.js'
 import jwt from "jsonwebtoken"
 import { createAccessToken, createRefreshToken } from "../middlewares/tokens.middleware.js";
-import { compare } from "bcrypt";
 
 const generateTokens = async (userid)=>{
     try {
