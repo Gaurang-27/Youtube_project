@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { NavLink} from "react-router-dom";
+import Logout from "../Usercontrols/Logout";
 
 function Getvideo(){
     const [data, setData] = useState(null);
@@ -36,19 +37,17 @@ function Getvideo(){
     // useEffect(() => {
     //     console.log(videoUrls); // Check extracted URLs
     // }, [videoUrls]); // Log new URLs when updated
-    
-
     if(error) return <p>{error}</p>
 
     return(
         <div>
+            <Logout/>
             <h2>Video Gallery</h2>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
                 {video.length > 0 ? (
                     video.map((element, index) => (
-                        <NavLink to="">
-                            <img 
-                            key={index} 
+                        <NavLink to={`/${element.video_id}`}>
+                            <img  
                             src={element.thumbnail_url} 
                             alt={`Thumbnail ${index + 1}`} 
                             width="320" 
