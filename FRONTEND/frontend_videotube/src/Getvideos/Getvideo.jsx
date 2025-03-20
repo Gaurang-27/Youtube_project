@@ -11,6 +11,7 @@ function Getvideo(){
     const navigate = useNavigate()
 
     useEffect(() => {
+        console.log(import.meta.env.VITE_BASE_URL_BACKEND)
         const fetchData = async () => {
             try {
                 const response = await axios.get("/videos");
