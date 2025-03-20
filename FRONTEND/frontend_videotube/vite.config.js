@@ -6,9 +6,9 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   server: {
     proxy: {
-      '/users' : "http://localhost:8000",
-      '/videos' :"http://localhost:8000",
-      '/subs' : "http://localhost:8000"
+      '/users' : "https://de8b-2401-4900-1c5a-3167-1e7-8c87-73e9-3116.ngrok-free.app",
+      '/videos' :"https://de8b-2401-4900-1c5a-3167-1e7-8c87-73e9-3116.ngrok-free.app",
+      '/subs' : "https://de8b-2401-4900-1c5a-3167-1e7-8c87-73e9-3116.ngrok-free.app"
     },
   },
   plugins: [react(),tailwindcss()],
