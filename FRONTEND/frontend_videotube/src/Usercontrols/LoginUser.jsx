@@ -1,7 +1,13 @@
 import { useState } from "react";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { setUser } from "../Redux/UserSlice";
 
 const LoginUser = () => {
+
+  const dispatch = useDispatch()
+
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -20,6 +26,7 @@ const LoginUser = () => {
     try {
       const response = await axios.post("/users/login", formData);
       console.log(response)
+      dispatch(setUser(response.data.data.user));
       // Store the JWT token in localStorage
       localStorage.setItem("refreshToken", response.data.data.refreshToken);
       localStorage.setItem("accessToken",response.data.data.accessToken)

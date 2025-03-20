@@ -1,8 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { clearUser } from "../Redux/UserSlice";
 
 const Logout = () => {
+
+  const dispatch = useDispatch()
+
   const [message, setMessage] = useState("");
   const navigate = useNavigate(); // For redirection
 
@@ -20,6 +25,8 @@ const Logout = () => {
 
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
+
+      dispatch(clearUser());
 
       // Show logout success message
       setMessage("Logout successful!");

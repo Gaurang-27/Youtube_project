@@ -3,17 +3,21 @@ import { useState, useEffect } from "react";
 import { NavLink} from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import Logout from "../Usercontrols/Logout";
+import { useSelector } from "react-redux";
 
-function Getvideo(){
+
+function UserVideos(){
     const [data, setData] = useState(null);
     const [error, setError] = useState(null);
     const [video, setvideo] =useState({});
     const navigate = useNavigate()
 
+    const user = useSelector((state)=>state.user.user)
+
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axios.get("/videos");
+                const response = await axios.get(`/videos/userid/${user.user_id}`);
                 //console.log(response.data)
                 setData(response.data);
                 setvideo(response.data.statusCode)
@@ -54,4 +58,4 @@ function Getvideo(){
     )
 }
 
-export default Getvideo
+export default UserVideos

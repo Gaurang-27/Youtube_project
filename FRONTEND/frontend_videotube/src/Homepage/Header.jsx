@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import './Header.css';
+import Logout from "../Usercontrols/Logout";
 
 const Header = function () {
     return (
@@ -8,7 +9,12 @@ const Header = function () {
         <ul className="flex justify-between items-center max-w-6xl mx-auto">
           <li className="text-xl font-bold">📹 Videotube</li>
           <li className="cursor-pointer hover:text-gray-300 transition">Subscriptions</li>
-          <li className="cursor-pointer hover:text-gray-300 transition">Account</li>
+          <li className="cursor-pointer hover:text-gray-300 transition">
+            <NavLink to={'/account-dashboard'}>
+              Account
+            </NavLink>
+          </li>
+          <li><Logout/></li>
         </ul>
       </div>
     );

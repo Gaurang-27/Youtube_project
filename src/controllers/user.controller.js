@@ -85,6 +85,13 @@ const registerUser = asyncHandler( async (req,res,next) =>{
     const [createdUser]= await connection.query(`
         select * from users
         where user_id=?`,[userid]);
+
+
+    //user will subscribe to himself by default
+    await connection.query("insert into subscriptions (subscriber_id, subscribed_to_id) values(?,?)",
+        [userid, userid]
+    )
+
     if(!createdUser[0]){
         throw new ApiError(500, " could not create user");
     }
@@ -200,6 +207,12 @@ const getUserDetails = asyncHandler(async (req,res) =>{
     )
 })
 
+const getChannelDetails = asyncHandler(async(req, res)=>{
+    const user_id = req.params;
+    const [result] = await connection.query(`
+        select fullname , `)
+
+})
 
 
 export {registerUser,
