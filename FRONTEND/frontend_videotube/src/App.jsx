@@ -3,7 +3,7 @@ import './App.css'
 import RegisterUser from './Usercontrols/RegisterUser'
 import Getvideo from './Getvideos/Getvideo'
 import { Route, RouterProvider, createBrowserRouter, createRoutesFromElements } from "react-router-dom";
-import GetvideobyId from './Getvideos/Getvideobyid';
+import GetvideobyId from './Getvideos/GetvideobyId';
 import LoginUser from './Usercontrols/LoginUser';
 import Homepage from './Homepage/Homepage';
 import ChannelVideos from './ChannelPage/ChannelVideos';
