@@ -6,7 +6,7 @@ CREATE TABLE users (
     fullName VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    avatar varchar(600) DEFAULT 'https://thenounproject.com/browse/icons/term/user-generic/',
+    avatar varchar(600) DEFAULT 'https://user-images.githubusercontent.com/11250/39013954-f5091c3a-43e6-11e8-9cac-37cf8e8c8e4e.jpg',
     cover_image varchar(600),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     refreshToken VARCHAR(500)
