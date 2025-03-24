@@ -13,7 +13,8 @@ const SubscribeButton = ({ channel_id }) => {
         // Check if the user is already subscribed
         const fetchSubscriptionStatus = async () => {
             try {
-                const response = await axios.get(`/subs/checksubscribed/${channel_id}`);
+                const response = await axios.get(`${import.meta.env.VITE_BASE_URL_BACKEND}/subs/checksubscribed/${channel_id}`,{withCredentials:true});
+
                 console.log(response.data.statusCode.subscribed)
                 setSubscribed(response.data.statusCode.subscribed); // Assuming backend sends { subscribed: true/false }
             } catch (err) {
@@ -30,7 +31,8 @@ const SubscribeButton = ({ channel_id }) => {
         setLoading(true);
         setError(null);
         try {
-            const result = await axios.post(`/subs/subscribe/${channel_id}`);
+            //console.log(channel_id)
+            const result = await axios.post(`${import.meta.env.VITE_BASE_URL_BACKEND}/subs/subscribe/${channel_id}`,{},{ withCredentials: true });
             setSubscribed(result.data.statusCode.subscribed);
         } catch (err) {
             setError("Subscription failed. Try again.");

@@ -17,7 +17,8 @@ function UserVideos(){
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axios.get(`/videos/userid/${user.user_id}`);
+                const response = await axios.get(`${import.meta.env.VITE_BASE_URL_BACKEND}/videos/userid/${user.user_id}`);
+
                 //console.log(response.data)
                 setData(response.data);
                 setvideo(response.data.statusCode)

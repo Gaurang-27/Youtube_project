@@ -30,7 +30,8 @@ const generateTokens = async (userid)=>{
 
 const optionsforCookies = {
     httpOnly: true,
-    secure: false//false for local host only
+    secure: process.env.NODE_ENV === "production",//false for local host only
+    sameSite: "lax",
 }
 
 const registerUser = asyncHandler( async (req,res,next) =>{

@@ -24,7 +24,11 @@ const LoginUser = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post("/users/login", formData);
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL_BACKEND}/users/login`, formData, {
+        withCredentials: true,
+      });
+      
+
       console.log(response)
       dispatch(setUser(response.data.data.user));
       // Store the JWT token in localStorage

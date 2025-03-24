@@ -14,7 +14,7 @@ function Getvideo(){
         console.log(import.meta.env.VITE_BASE_URL_BACKEND)
         const fetchData = async () => {
             try {
-                const response = await axios.get("/videos");
+                const response = await axios.get(`${import.meta.env.VITE_BASE_URL_BACKEND}/videos`);
                 //console.log(response.data)
                 setData(response.data);
                 setvideo(response.data.statusCode)

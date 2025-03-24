@@ -35,9 +35,10 @@ const Registeruser = () => {
     }
 
     try {
-      const response = await axios.post("/users/register", formDataToSend, {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL_BACKEND}/users/register`, formDataToSend, {
         headers: { "Content-Type": "multipart/form-data" },
-      });
+    });
+    
 
       setMessage(response.data.message); // Show success message
       setFormData({

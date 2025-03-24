@@ -14,7 +14,8 @@ const SubscriberCard = () => {
     useEffect(() => {
         const fetchSubscribers = async () => {
             try {
-                const response = await axios.get(`/subs/subscriber-list/${user.user_id}`); // Replace with actual API route
+                const response = await axios.get(`${import.meta.env.VITE_BASE_URL_BACKEND}/subs/subscriber-list/${user.user_id}`);
+                // Replace with actual API route
                 setSubs(response.data.statusCode);
             } catch (err) {
                 setError("Failed to load subscribers");

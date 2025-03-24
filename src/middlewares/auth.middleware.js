@@ -12,6 +12,7 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
         if(!token){
             throw new ApiError(401,"Unauthorized request")
         }
+        //console.log(token)
     
         //now we verify the token by decoding it 
         const decodedToken= jwt.verify(token,process.env.ACCESS_TOKEN_SECRET);
@@ -26,6 +27,7 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
         delete user[0].refreshToken
         //add this user to req.body
         req.user =user[0];
+        //console.log("done authmiddleware")
         next();
     } catch (error) {
         throw new ApiError(401, error?.message || "Token invalid");

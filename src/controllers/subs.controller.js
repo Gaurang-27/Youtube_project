@@ -6,6 +6,7 @@ import {connection} from '../index.js'
 const toggleSub = asyncHandler(async (req,res)=>{
     const subscriber = req.user.user_id;
     const {sub_to} = req.params;
+   // console.log(subscriber, sub_to)
     //console.log(sub_to);
     
     //if already sub then we need to unsubscribe
