@@ -25,7 +25,7 @@ connection.getConnection()
 .then(()=>{
     console.log("database connected succesfully")
     app.listen(8000,()=>{
-        console.log("server running at port 8080")
+        console.log("server running at port 8000")
     })
 })
 .catch((err)=>{
