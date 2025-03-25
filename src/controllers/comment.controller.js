@@ -14,16 +14,19 @@ const getVideoComments = asyncHandler(async (req, res) => {
         throw new ApiError("No video_id found")
     }
 
-    const [comments]= await connection.query(`
-        select * from comments
-        where video_id = ?
-        limit ? offset ?`,[video_id,limit, offset])
+    const [comments] = await connection.query(`
+        SELECT comments.*, users.fullName 
+        FROM comments
+        JOIN users ON comments.user_id = users.user_id
+        WHERE comments.video_id = ?
+        LIMIT ? OFFSET ?`, [video_id, limit, offset]);
     
-    if(!comments){
-        throw new ApiError("No comments found or error while fetching comments")
+    if (!comments || comments.length === 0) {
+        throw new ApiError("No comments found or error while fetching comments");
     }
-
-    return res.status(200).json(comments)
+    
+    return res.status(200).json(new ApiResponse(comments));
+    
 })
 
 const addComment = asyncHandler(async (req, res) => {
@@ -32,7 +35,7 @@ const addComment = asyncHandler(async (req, res) => {
     const user_id = req.user.user_id; 
 
     const {comment_text} =  req.body;
-
+    console.log(comment_text)
     if(!comment_text){
         throw new ApiError("Comment not found")
     }
@@ -43,11 +46,14 @@ const addComment = asyncHandler(async (req, res) => {
     const [result]= await connection.query(`
         insert into comments (user_id, video_id, comment_text)
         values(?,?,?)`, [user_id, video_id, comment_text])
-
+    
+    const [addedComment] = await connection.query(`
+        select * from comments
+        where user_id = ? and comment_id =?`,[user_id , result.insertId])
     if(!result) {
         throw new ApiError("error while posting comment")
     }
-    return res.status(200).json("Comment posted succesfully")
+    return res.status(200).json(new ApiResponse({comment_id :addedComment[0].comment_id,comment_text,user_id,video_id,fullName:req.user.fullName}))
 })
 
 const updateComment = asyncHandler(async (req, res) => {
@@ -56,7 +62,7 @@ const updateComment = asyncHandler(async (req, res) => {
 
 const deleteComment = asyncHandler(async (req, res) => {
     
-    const {comment_id} = req.body;
+    const {comment_id} = req.params;
     if(!comment_id){
         throw new ApiError("comment_id not found")
     }

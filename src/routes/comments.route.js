@@ -10,8 +10,8 @@ import {
 const commentRouter = Router();
 
 
-commentRouter.route('/add-comment').post(authMiddleware, addComment)
-commentRouter.route('/get-comments').get(getVideoComments)
-commentRouter.route('/delete-comment').delete(authMiddleware,deleteComment)
+commentRouter.route('/add-comment/:video_id').post(authMiddleware, addComment)
+commentRouter.route('/get-comments/:video_id').get(getVideoComments)
+commentRouter.route('/delete-comment/:comment_id').delete(authMiddleware,deleteComment)
 
 export default commentRouter
