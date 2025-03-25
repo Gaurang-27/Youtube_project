@@ -20,9 +20,9 @@ const getVideoComments = asyncHandler(async (req, res) => {
         JOIN users ON comments.user_id = users.user_id
         WHERE comments.video_id = ?
         LIMIT ? OFFSET ?`, [video_id, limit, offset]);
-    
-    if (!comments || comments.length === 0) {
-        throw new ApiError("No comments found or error while fetching comments");
+    console.log(comments)
+    if (comments.length === 0) {
+        throw res.status(200).json(new ApiResponse([]));
     }
     
     return res.status(200).json(new ApiResponse(comments));
