@@ -32,6 +32,7 @@ const optionsforCookies = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",//false for local host only
     sameSite: "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 }
 
 const registerUser = asyncHandler( async (req,res,next) =>{
