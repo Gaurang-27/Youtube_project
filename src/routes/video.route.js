@@ -5,7 +5,8 @@ import {
     publishVideo,
     getAllVideos,
     getVideoById,
-    getVideoByUser
+    getVideoByUser,
+    deleteVideo
 } from '../controllers/video.controller.js'
 
 const videoRouter = Router();
@@ -28,5 +29,6 @@ videoRouter.route('/publish-video').post(
 videoRouter.route('/').get(getAllVideos)//required query - ?page,limit
 videoRouter.route('/userid/:user_id').get(getVideoByUser)//requied query - ?page, limit
 videoRouter.route('/videoid/:video_id').get(getVideoById)
+videoRouter.route('/delete-video/:video_id').delete(authMiddleware,deleteVideo)
 
 export default videoRouter;

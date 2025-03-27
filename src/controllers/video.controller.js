@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asynHandler.js";
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
-import { uploadOnCloudinary } from "../utils/cloudinary.util.js";
+import { deleteFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.util.js";
 import {connection} from '../index.js'
 import jwt from "jsonwebtoken"
 import { createAccessToken, createRefreshToken } from "../middlewares/tokens.middleware.js";
@@ -111,10 +111,59 @@ const getVideoById= asyncHandler( async (req,res)=>{
 })
 
 //video delete controller
+const deleteVideo = asyncHandler(async(req,res)=>{
+
+    const {video_id} = req.params;
+    const user_id = req.user.user_id;
+    if(!video_id ){
+        throw new ApiError(400,"video_id and video_url is required to delete the video")
+    }
+
+    const [video] = await connection.query(`select * from videos
+        where video_id=?`,[video_id])
+    if(!video[0]){
+        throw new ApiError(404,"Video does not exist")
+    }
+    if(video[0].user_id != user_id){
+        throw new ApiError(400,"Can't delete someone else's video")
+    }
+
+    const video_url = video[0].video_url
+    const thumbnail_url = video[0].thumbnail_url
+
+    const extractPublicId = (videoUrl) => {
+        const parts = videoUrl.split('/');
+        const filename = parts.pop(); // Get last part
+        return filename.split('.')[0]; // Remove file extension (.mp4)
+      };
+
+    const publicId_video = extractPublicId(video_url);
+    const publicId_thumbnail = extractPublicId(thumbnail_url)
+
+    // console.log(publicId_thumbnail, publicId_video)
+    // return res.status(200).json('test')
+    
+    const deleteVideo = await deleteFromCloudinary(publicId_video,'video')
+    const deleteThumbnail = await deleteFromCloudinary(publicId_thumbnail,'image')
+
+    if(!deleteVideo ||  !deleteThumbnail){
+        throw new ApiError("error while deleting the video")
+    }
+      
+    const [result] = await connection.query(`
+        delete from videos
+        where video_id =?`,[video_id])
+    if(!result) {
+        throw new ApiError("error while deleting the video")
+    }
+
+    return res.status(200).json(new ApiResponse("Video deleted succesfully"))
+})
 
 export {
     publishVideo,
     getAllVideos,
     getVideoById,
-    getVideoByUser
+    getVideoByUser,
+    deleteVideo
 }
