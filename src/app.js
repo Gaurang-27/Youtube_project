@@ -23,11 +23,15 @@ import userRouter from "./routes/user.route.js";
 import videoRouter from "./routes/video.route.js";
 import subsRouter from "./routes/subs.route.js";
 import commentRouter from "./routes/comments.route.js";
+import playlistRouter from "./routes/playlist.route.js";
+import reactionRouter from "./routes/reaction.route.js";
 //route declaration
 app.use('/users',userRouter);
 app.use('/videos',videoRouter);
 app.use('/subs',subsRouter)
 app.use('/comment', commentRouter)
+app.use('/playlist',playlistRouter)
+app.use('/reaction',reactionRouter)
 export {app};
 
 

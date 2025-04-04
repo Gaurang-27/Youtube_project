@@ -42,3 +42,28 @@ CREATE TABLE comments (
     FOREIGN KEY (video_id) REFERENCES videos(video_id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
+CREATE TABLE playlists (
+    playlist_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+CREATE TABLE playlist_videos (
+    playlist_videos_id INT AUTO_INCREMENT PRIMARY KEY,
+    playlist_id INT NOT NULL,
+    video_id INT NOT NULL,
+    added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (playlist_id) REFERENCES playlists(playlist_id) ON DELETE CASCADE,
+    FOREIGN KEY (video_id) REFERENCES videos(video_id) ON DELETE CASCADE
+);
+CREATE TABLE reactions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    video_id INT NOT NULL,
+    reaction_type ENUM('like', 'dislike') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (video_id) REFERENCES videos(video_id) ON DELETE CASCADE,
+    UNIQUE (user_id, video_id) -- Ensures a user can only have one reaction per video
+);
