@@ -54,13 +54,15 @@ const publishVideo = asyncHandler(async (req,res)=>{
 })  
 
 const getAllVideos = asyncHandler(async (req,res)=>{
-    const {limit = 10 , page = 1} = req.query;
+    const {limit = 12 , page = 1} = req.query;
 
     const offset= (page-1)*limit;
     const [result] = await connection.query(`
-        select * from videos
-        order by uploaded_at
-        limit ? offset ?`, [limit ,offset]);
+        SELECT *, COUNT(*) OVER() AS total_count
+        FROM videos
+        ORDER BY uploaded_at
+        LIMIT ? OFFSET ?;
+        `, [limit ,offset]);
     if(!result) {
         throw new ApiError(400, "could not retrieve content");
     }
